@@ -3,10 +3,82 @@ importScripts("/scram/scramjet.all.js");
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
 
+// Firefox lacks request.body; buffer POST bodies so Scramjet forwards them intact.
+async function withBufferedBody(event) {
+	const { request } = event;
+	if (request.method === "GET" || request.method === "HEAD") return event;
+	const buffer = await request.arrayBuffer();
+	const body = buffer.byteLength ? buffer : null;
+	const shimmed = new Proxy(request, {
+		get(target, prop) {
+			if (prop === "body") return body;
+			const value = Reflect.get(target, prop, target);
+			return typeof value === "function" ? value.bind(target) : value;
+		},
+	});
+	return {
+		request: shimmed,
+		clientId: event.clientId,
+		resultingClientId: event.resultingClientId,
+	};
+}
+
+// Retry safe requests when the connection resets on the first try.
+const TRANSIENT =
+	/Hyper client|http2 error|PROTOCOL_ERROR|connection closed|ConnectionReset|WebSocket/i;
+
+async function fetchWithRetry(routed) {
+	const safe = routed.request.method === "GET" || routed.request.method === "HEAD";
+	for (let attempt = 0; ; attempt++) {
+		const last = !safe || attempt >= 2;
+		try {
+			const response = await scramjet.fetch(routed);
+			if (last || response.status < 500) return response;
+			const text = await response.clone().text();
+			if (!TRANSIENT.test(text)) return response;
+		} catch (error) {
+			if (last || !TRANSIENT.test(String(error))) throw error;
+		}
+		await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+	}
+}
+
+// Rewritten scripts/styles can never match their original integrity hashes,
+// so remove the hashes (and preload Link headers) or the browser blocks them.
+const TAG = /<(?:link|script)\b[^>]*>/gi;
+const INTEGRITY =
+	/\s(?:scramjet-attr-)?integrity(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?(?=[\s/>])/gi;
+
+async function stripIntegrity(response) {
+	const type = response.headers.get("content-type") || "";
+	const html = type.includes("text/html") && response.body;
+	if (!html && !response.headers.has("link")) return response;
+	if (response.status === 101 || response.status === 204 || response.status === 304)
+		return response;
+	const headers = new Headers(response.headers);
+	headers.delete("link");
+	if (!html) {
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		});
+	}
+	const text = await response.text();
+	headers.delete("content-length");
+	return new Response(text.replace(TAG, (tag) => tag.replace(INTEGRITY, "")), {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	});
+}
+
 async function handleRequest(event) {
 	await scramjet.loadConfig();
 	if (scramjet.route(event)) {
-		return scramjet.fetch(event);
+		const routed = await withBufferedBody(event);
+		const response = await fetchWithRetry(routed);
+		return stripIntegrity(response);
 	}
 	return fetch(event.request);
 }
@@ -14,3 +86,6 @@ async function handleRequest(event) {
 self.addEventListener("fetch", (event) => {
 	event.respondWith(handleRequest(event));
 });
+
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
