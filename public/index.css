@@ -1,13 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap");
+
+:root {
+	--neb-purple: #7b5cff;
+	--neb-pink: #ff5cd6;
+	--neb-blue: #4cc9ff;
+	--neb-bg: #05030f;
+	--neb-text: #e9e6ff;
+}
+
+* {
+	box-sizing: border-box;
+}
 
 body {
 	font-family: "Roboto", Arial, Helvetica, sans-serif;
 	margin: 0;
-	background: #111;
+	color: var(--neb-text);
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	background:
+		radial-gradient(ellipse at 20% 15%, rgba(123, 92, 255, 0.35), transparent 50%),
+		radial-gradient(ellipse at 80% 30%, rgba(255, 92, 214, 0.25), transparent 55%),
+		radial-gradient(ellipse at 50% 95%, rgba(76, 201, 255, 0.25), transparent 55%),
+		var(--neb-bg);
+	background-attachment: fixed;
 }
+
+/* ---------- Layout helpers ---------- */
 
 .flex-center {
 	display: flex;
@@ -20,9 +40,134 @@ body {
 	margin-top: 10%;
 }
 
-.left-margin {
-	margin: 0px 16px;
+.neb-main {
+	position: relative;
+	z-index: 1;
+	padding: 0 16px;
 }
+
+/* ---------- Stars ---------- */
+
+.stars {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+}
+
+.stars-1 {
+	background-image:
+		radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+		radial-gradient(1px 1px at 160px 70px, #fff, transparent),
+		radial-gradient(1px 1px at 100px 190px, #dfe6ff, transparent);
+	background-size: 220px 220px;
+	animation: neb-drift 120s linear infinite, neb-twinkle 4s ease-in-out infinite alternate;
+}
+
+.stars-2 {
+	background-image:
+		radial-gradient(1.5px 1.5px at 90px 140px, #cfd8ff, transparent),
+		radial-gradient(1.5px 1.5px at 230px 40px, #ffd9fb, transparent);
+	background-size: 300px 300px;
+	animation: neb-drift 80s linear infinite, neb-twinkle 6s ease-in-out infinite alternate-reverse;
+}
+
+.stars-3 {
+	background-image:
+		radial-gradient(2px 2px at 60px 80px, #fff, transparent),
+		radial-gradient(2px 2px at 250px 220px, #b9f0ff, transparent);
+	background-size: 400px 400px;
+	animation: neb-drift 50s linear infinite, neb-twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes neb-drift {
+	from { background-position: 0 0; }
+	to   { background-position: 0 600px; }
+}
+
+@keyframes neb-twinkle {
+	from { opacity: 0.35; }
+	to   { opacity: 1; }
+}
+
+/* ---------- Logo and heading ---------- */
+
+.logo-wrapper {
+	text-align: center;
+}
+
+.neb-logo {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, #fff 0%, var(--neb-blue) 15%, var(--neb-purple) 45%, var(--neb-pink) 80%, transparent 100%);
+	box-shadow:
+		0 0 30px rgba(123, 92, 255, 0.7),
+		0 0 70px rgba(255, 92, 214, 0.4);
+	animation: neb-float 4s ease-in-out infinite alternate;
+}
+
+@keyframes neb-float {
+	from { transform: translateY(-6px); }
+	to   { transform: translateY(6px); }
+}
+
+.neb-heading {
+	font-family: "Orbitron", "Roboto", sans-serif;
+	font-size: clamp(1.8rem, 6vw, 3rem);
+	letter-spacing: 4px;
+	margin: 18px 0 0;
+	background: linear-gradient(90deg, var(--neb-blue), var(--neb-purple), var(--neb-pink));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+/* ---------- Description ---------- */
+
+.desc {
+	display: flex;
+	justify-content: center;
+}
+
+.desc p {
+	max-width: 560px;
+	width: 100%;
+	text-align: center;
+	color: rgba(233, 230, 255, 0.65);
+}
+
+/* ---------- Search bar ---------- */
+
+#sj-address {
+	background: rgba(20, 15, 50, 0.65);
+	backdrop-filter: blur(6px);
+	font-family: inherit;
+	font-size: 16px;
+	padding: 0 22px;
+	height: 52px;
+	width: 440px;
+	max-width: 100%;
+	margin-top: 5px;
+	border: 2px solid var(--neb-purple);
+	border-radius: 50px;
+	outline: none;
+	color: #fff;
+	box-shadow: 0 0 18px rgba(123, 92, 255, 0.45);
+	transition: border-radius 0.15s, border-color 0.2s, box-shadow 0.2s;
+}
+
+#sj-address::placeholder {
+	color: rgba(233, 230, 255, 0.5);
+}
+
+#sj-address:focus {
+	border-color: var(--neb-pink);
+	border-radius: 14px;
+	box-shadow: 0 0 26px rgba(255, 92, 214, 0.6);
+}
+
+/* ---------- Proxy frame and errors ---------- */
 
 #sj-frame {
 	border: none;
@@ -32,6 +177,7 @@ body {
 	width: 100vw;
 	height: 100vh;
 	background-color: #111;
+	z-index: 10;
 }
 
 #sj-error {
@@ -43,22 +189,15 @@ body {
 	font-size: 12px;
 	color: #fff;
 	font-family: "Courier New", Courier, monospace;
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
-.logo {
-	height: 25vh;
-}
-
-.logo-wrapper .text {
-	font-size: 75px;
-	color: #fff;
-}
-
-.logo-wrapper h1 {
-	color: white;
-}
+/* ---------- Footer ---------- */
 
 footer {
+	position: relative;
+	z-index: 1;
 	margin: 0 16px;
 	margin-top: auto;
 	display: flex;
@@ -79,7 +218,7 @@ footer a,
 footer span {
 	margin: 0 15px;
 	text-decoration: none;
-	color: #fff;
+	color: rgba(233, 230, 255, 0.8);
 	font-size: 15px;
 }
 
@@ -88,44 +227,112 @@ footer a {
 }
 
 footer a:hover {
+	color: var(--neb-pink);
 	text-decoration: underline;
 }
 
-.desc p {
-	width: 560px;
-	color: rgba(253, 253, 253, 0.514);
+/* ---------- Loading screen ---------- */
+
+#neb-loader {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 22px;
+	background:
+		radial-gradient(ellipse at 30% 30%, rgba(123, 92, 255, 0.4), transparent 55%),
+		radial-gradient(ellipse at 70% 70%, rgba(255, 92, 214, 0.3), transparent 55%),
+		var(--neb-bg);
+	transition: opacity 0.8s ease, visibility 0.8s ease;
 }
 
-#sj-address {
-	background: none;
-	font-family: inherit;
-	padding: 0px 17px;
-	height: 48px;
-	border: 1px solid rgb(255, 255, 255, 0.2);
-	color: var(--text-color);
-	border-radius: 3px;
-	outline: none;
-	width: 350px;
-	margin-top: 5px;
-	border-radius: 50px;
-	color: #fff;
-	transition: border-radius 0.1s;
+#neb-loader.neb-hide {
+	opacity: 0;
+	visibility: hidden;
 }
 
-#sj-address:focus {
-	border: 1px solid rgba(253, 253, 253, 0.514);
-	border-radius: 6px;
+.neb-orbit {
+	position: relative;
+	width: 110px;
+	height: 110px;
 }
+
+.neb-ring {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	border: 4px solid transparent;
+	border-top-color: var(--neb-purple);
+	border-right-color: var(--neb-pink);
+	box-shadow: 0 0 30px rgba(123, 92, 255, 0.6);
+	animation: neb-spin 1.2s linear infinite;
+}
+
+.neb-ring-2 {
+	inset: 14px;
+	border-top-color: var(--neb-blue);
+	border-right-color: transparent;
+	border-left-color: var(--neb-purple);
+	box-shadow: 0 0 20px rgba(76, 201, 255, 0.5);
+	animation-duration: 0.9s;
+	animation-direction: reverse;
+}
+
+.neb-core {
+	position: absolute;
+	inset: 38px;
+	border-radius: 50%;
+	background: radial-gradient(circle, #fff, var(--neb-pink) 60%, transparent);
+	box-shadow: 0 0 25px var(--neb-pink);
+	animation: neb-pulse-core 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes neb-spin {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes neb-pulse-core {
+	from { transform: scale(0.7); opacity: 0.7; }
+	to   { transform: scale(1.1); opacity: 1; }
+}
+
+.neb-title {
+	margin: 0;
+	font-family: "Orbitron", "Roboto", sans-serif;
+	font-size: clamp(1.6rem, 7vw, 2.4rem);
+	letter-spacing: 4px;
+	text-align: center;
+	background: linear-gradient(90deg, var(--neb-blue), var(--neb-purple), var(--neb-pink));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	animation: neb-glow 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes neb-glow {
+	from { opacity: 0.55; filter: drop-shadow(0 0 4px #7b5cff); }
+	to   { opacity: 1;    filter: drop-shadow(0 0 16px #ff5cd6); }
+}
+
+.neb-sub {
+	margin: 0;
+	color: #b9b2ff;
+	font-size: 0.95rem;
+}
+
+/* ---------- Credits page (credits.html) ---------- */
 
 .credit {
 	border-radius: 10px;
 	padding: 10px;
-	display: block;
-	border: #fff 1px solid;
-	color: #fff;
 	display: flex;
 	flex-wrap: wrap;
 	margin-bottom: 15px;
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	color: #fff;
 }
 
 .credit label {
